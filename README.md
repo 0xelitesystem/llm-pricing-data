@@ -104,6 +104,10 @@ When a provider changes pricing or releases a new model, open a PR. See [CONTRIB
 - **Not authoritative.** Always confirm critical numbers against the provider's own pricing page before billing decisions.
 - **Not an endorsement.** Listing a provider doesn't mean we vouch for them.
 
+## More
+
+Part of a catalog of single-file browser tools and plain-language references, all MIT licensed and dependency-free: [0xelitesystem.github.io](https://0xelitesystem.github.io/). Built by [elitesystem.ai](https://elitesystem.ai).
+
 ## License
 
 MIT. Use the data however you want, including in commercial products.
