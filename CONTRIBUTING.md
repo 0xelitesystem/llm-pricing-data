@@ -35,6 +35,20 @@ When a vendor announces deprecation:
 
 Don't delete the entry. Keeping deprecated entries lets users with pinned old code see what's affected.
 
+## To remove an entry the vendor no longer publishes
+
+Sometimes a model disappears from a vendor's pricing page without a deprecation
+announcement. Its price can no longer be verified by anyone, so it goes:
+
+1. Confirm the model is absent from the vendor's current pricing page
+2. Remove the entry
+3. Say in the PR which page you checked and on what date
+
+Same rule for a single field: if the vendor still prices a model but no longer
+publishes its context window or cutoff, set those fields to `null`. Do not
+carry the old value forward, and do not estimate one. A guessed number in a
+pricing file is worse than a missing one, because it looks checked.
+
 ## To remove a deprecated model
 
 Remove only after the deprecation date has passed AND the model is no longer callable. Open an issue first to confirm.

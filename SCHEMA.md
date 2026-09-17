@@ -2,6 +2,8 @@
 
 Each provider file is a JSON array. Each element is a model entry with the following fields.
 
+Every number in an entry must be readable on the URL in its `source` field. A required field the primary source does not publish is `null`, never a guess or a carried-over value from an older listing; see "Nulls and verification" below.
+
 ## Required fields
 
 | Field | Type | Description |
@@ -30,7 +32,9 @@ When relevant, entries may include any of:
 
 | Field | Type | Description |
 |---|---|---|
-| `cached_input_per_million_tokens_usd` | number | Cost per million tokens for cached / repeated context. |
+| `cached_input_per_million_tokens_usd` | number | Cost per million tokens for cached / repeated context (a cache hit). |
+| `cache_write_5m_per_million_tokens_usd` | number | Cost per million tokens to WRITE into a 5-minute prompt cache, where the provider prices writes separately. |
+| `cache_write_1h_per_million_tokens_usd` | number | Cost per million tokens to write into a 1-hour prompt cache. |
 | `batch_input_per_million_tokens_usd` | number | Cost per million tokens when using batch / async endpoints. |
 | `batch_output_per_million_tokens_usd` | number | Output cost in batch mode. |
 | `tier_pricing` | object | Pricing that varies with input length. See below. |
@@ -61,11 +65,23 @@ Some providers price differently when input exceeds a threshold (Google Gemini d
 
 The first entry's threshold means "if input is ≤ this many tokens." The last entry's threshold of `null` is the catch-all bucket for anything above prior thresholds.
 
+## Nulls and verification
+
+A required field is `null` when the provider's own pages do not state it. That happens most often for older models a vendor still sells and still prices but no longer documents: the price is verifiable, the context window is not.
+
+Rules:
+
+- If a value cannot be read on a primary source (the vendor's own pricing page, model page, or announcement), it is `null`. It is never estimated, never inferred from a sibling model, and never carried forward from an earlier version of this repo.
+- If the PRICE itself cannot be verified, the entry is removed rather than kept stale.
+- Optional fields are omitted entirely when they do not apply, rather than set to `null`.
+- `notes` says where a spec came from when it came from a page other than `source`.
+
 ## Validation rules
 
 - Numbers must be non-negative
 - `model_id` must be unique within a file
 - `last_updated` must not be in the future
+- `last_updated` is the date the entry was checked against its `source`, not the date it was written
 - `deprecation_date`, when set, must not be before `last_updated`
 - `source` must be a URL (not a description)
 

@@ -14,7 +14,6 @@ data/
   openai.json
   google.json
   mistral.json
-  meta.json          (for hosted providers serving Llama)
   ...
 ```
 
@@ -22,27 +21,34 @@ Each provider file contains an array of model entries. Schema:
 
 ```json
 {
-  "model_id": "claude-opus-4-7",
-  "display_name": "Claude Opus 4.7",
+  "model_id": "claude-opus-5",
+  "display_name": "Claude Opus 5",
   "vendor": "anthropic",
-  "input_per_million_tokens_usd": 15.00,
-  "output_per_million_tokens_usd": 75.00,
-  "context_window": 200000,
-  "max_output_tokens": 8192,
-  "training_data_cutoff": "2025-03",
+  "input_per_million_tokens_usd": 5.0,
+  "output_per_million_tokens_usd": 25.0,
+  "cached_input_per_million_tokens_usd": 0.5,
+  "cache_write_5m_per_million_tokens_usd": 6.25,
+  "cache_write_1h_per_million_tokens_usd": 10.0,
+  "batch_input_per_million_tokens_usd": 2.5,
+  "batch_output_per_million_tokens_usd": 12.5,
+  "context_window": 1000000,
+  "max_output_tokens": 128000,
+  "training_data_cutoff": "2026-05",
   "modalities": ["text", "image"],
   "tool_use": true,
   "vision": true,
-  "available_via": ["api", "claude.ai"],
+  "available_via": ["api", "amazon-bedrock", "google-vertex"],
   "deprecated": false,
   "deprecation_date": null,
-  "notes": "Most capable Anthropic model as of 2026-05",
-  "last_updated": "2026-05-01",
-  "source": "https://www.anthropic.com/pricing"
+  "notes": "Fast mode (speed: fast) is billed at $10 input / $50 output per MTok.",
+  "last_updated": "2026-09-17",
+  "source": "https://platform.claude.com/docs/en/about-claude/pricing"
 }
 ```
 
-Cached prompt input pricing, batch discounts, and other tier-specific pricing live in optional sub-fields (see `SCHEMA.md`).
+Cached prompt input pricing, prompt-cache write rates, batch discounts, and other tier-specific pricing live in optional sub-fields (see `SCHEMA.md`).
+
+A required field is `null` when the provider does not publish it. That is deliberate: a number nobody can check against a primary source does not belong in a pricing file, and an old number left in place is worse than an honest gap. If the PRICE cannot be verified, the entry is removed instead.
 
 ## Use the data
 
@@ -61,7 +67,7 @@ curl https://raw.githubusercontent.com/0xelitesystem/llm-pricing-data/v2026.05.0
 ```javascript
 import anthropic from "https://cdn.jsdelivr.net/gh/0xelitesystem/llm-pricing-data@main/data/anthropic.json";
 
-const opus = anthropic.find(m => m.model_id === "claude-opus-4-7");
+const opus = anthropic.find(m => m.model_id === "claude-opus-5");
 const cost = (inputTokens / 1_000_000) * opus.input_per_million_tokens_usd
            + (outputTokens / 1_000_000) * opus.output_per_million_tokens_usd;
 ```
@@ -76,6 +82,17 @@ url = "https://raw.githubusercontent.com/0xelitesystem/llm-pricing-data/main/dat
 with urllib.request.urlopen(url) as r:
     pricing = json.load(r)
 ```
+
+## Verified 2026-09-17
+
+Every entry in `data/` was re-read against the provider's own pages on 2026-09-17:
+
+- `anthropic.json`, [platform.claude.com pricing](https://platform.claude.com/docs/en/about-claude/pricing) and [models overview](https://platform.claude.com/docs/en/about-claude/models/overview)
+- `openai.json`, [developers.openai.com pricing](https://developers.openai.com/api/docs/pricing) and [models](https://developers.openai.com/api/docs/models)
+- `google.json`, [ai.google.dev Gemini API pricing](https://ai.google.dev/gemini-api/docs/pricing)
+- `mistral.json`, [mistral.ai API pricing](https://mistral.ai/pricing/api) and the [models overview](https://docs.mistral.ai/getting-started/models/models_overview/)
+
+What changed: the Anthropic rows carried Opus at $15 / $75 per MTok, which is the retired Opus 4.1 price, not the price of any Opus the vendor currently sells; the current Opus line is $5 / $25. Models the providers no longer list were removed rather than left to rot, and `data/meta.json` (hosted Llama) went with them, because neither host published a model id and a price that could both be verified from a primary page. A PR that restores Llama pricing with a checkable source is welcome.
 
 ## Update cadence
 
